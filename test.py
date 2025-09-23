@@ -2,22 +2,20 @@ from tkinter import *
 from tkinter import ttk
 from datetime import datetime
 
-
-
 def book_form():
     global backbutton_image
 
-    book_frame = Frame(root,bg="white", bd=2, relief=RIDGE)
-    book_frame.place(x=200, y=98, relwidth=1)
-    header = Label(book_frame, text="Book Management", font=("times new roman", 15, 'bold'), bg="#2b7192", fg="white", anchor='center')
+    books_frame = Frame(root,bg="white", bd=2, relief=RIDGE)
+    books_frame.place(x=205, y= 98, relheight=1, width=1000)
+    header = Label(books_frame, text="Book Management", font=("times new roman", 15, 'bold'), bg="#2b7192", fg="white", anchor='center')
     header.pack(fill=X)
 
     backbutton_image = PhotoImage(file="images\\return.png")
-    back_button = Button(book_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: book_frame.destroy())
+    back_button = Button(books_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: books_frame.destroy())
     back_button.place(x=5, y=0)
 
     # Start of top frame
-    top_frame = Frame(book_frame, bg="#f0f9ff")
+    top_frame = Frame(books_frame, bg="#f0f9ff")
     top_frame.pack(fill=X)
 
     searchFrame = Frame(top_frame, bg="#f0f9ff")
@@ -50,7 +48,7 @@ def book_form():
     # End of top frame
 
     # Start of middle frame
-    middle_frame = Frame(book_frame, bg ="white")
+    middle_frame = Frame(books_frame, bg ="white")
     middle_frame.pack(fill=X)
 
     b_title= Label(middle_frame, text= "Title", font=("times new roman", 12), bg="white", fg="black",)
@@ -89,19 +87,17 @@ def book_form():
     # End of middle frame
 
     # Start of bottom frame
-    bottom_frame = Frame(book_frame)
-    bottom_frame.pack(fill=X)
+    bottom_frame = Frame(books_frame, bg="white")
+    bottom_frame.pack(anchor="s")
 
-    save_btn = Button(bottom_frame, text="Save", font=("times new roman", 12))
-    save_btn.pack(side="left", padx=10, pady=10)
+    save_btn = Button(bottom_frame, text="Save", font=("times new roman", 12, "bold"), fg="white", bg="#00566b", cursor="hand2")
+    save_btn.grid(row=0, column=0, padx= 25)
 
-    update_btn = Button(bottom_frame, text="Update", font=("times new roman", 12))
-    update_btn.pack(side="left", padx=10, pady=10)
+    update_btn = Button(bottom_frame, text="Update", font=("times new roman", 12, "bold"), fg="white", bg="#00566b", cursor="hand2")
+    update_btn.grid(row=0, column=1, padx= 25)
 
-    delete_btn = Button(bottom_frame, text="Delete", font=("times new roman", 12))
-    delete_btn.pack(side="left", padx=10, pady=10)
-
-    bottom_frame.pack(anchor="center")
+    delete_btn = Button(bottom_frame, text="Delete", font=("times new roman", 12, "bold"), fg="white", bg="#00566b", cursor="hand2")
+    delete_btn.grid(row=0, column=2, padx= 25)
 
 
 def mark_optional_on_focus_in(event):
@@ -124,18 +120,20 @@ root.resizable(0, 0)
 root.configure(bg="#f0f9ff")
 
 bg_image = PhotoImage(file="images\\library.png")
-titleLabel = Label(root, image=bg_image, compound=LEFT, text="Library Management System  ", font=("times new roman", 40, 'bold'), bg="#010c48", fg="white", anchor='w', padx=20)
-titleLabel.place(x=0, y=0, relwidth=1)
+title_frame = Frame(root, bg="#010c48")
+title_frame.pack(fill=X)
+titleLabel = Label(title_frame, image=bg_image, compound=LEFT, text="Library Management System  ", font=("times new roman", 40, 'bold'), bg="#010c48", fg="white", anchor='w', padx=20)
+titleLabel.pack(side=LEFT)
 
-subtitleLabel = Label(root, text="Welcome to Library Management System\t Date: 2025-01-01\t\t\t Time: 12:00 PM", font=("times new roman", 15), bg="#8A97D9", fg="white")
-subtitleLabel.place(x=0, y=70, relwidth=1)
+logoutButton = Button(title_frame, text="Logout", font=("times new roman", 15, 'bold'), fg="white", bg="#00566b", cursor="hand2")
+logoutButton.pack(side=RIGHT, padx=(0,10))
 
-logoutButton = Button(root, text="Logout", font=("times new roman", 20, 'bold'), bg="white", fg="#010c48", cursor="hand2")
-logoutButton.place(x=1100, y=10, height= 50)
+subtitleLabel = Label(root, text="Welcome to Library Management System\t Date: 2025-01-01\t\t\tTime: 12:00 PM", font=("times new roman", 15), bg="#8A97D9", fg="white")
+subtitleLabel.pack(fill=X)
 
 # Star of left menu
-leftFrame = Frame(root)
-leftFrame.place(x=0, y=98, width=200, height=600)
+leftFrame = Frame(root, bg="#f0f9ff")
+leftFrame.pack(fill=Y, side=LEFT)
 
 logo_Image = PhotoImage(file="images\\digital-library.png")
 imageLabel = Label(leftFrame, image=logo_Image, bg="#f0f9ff")
@@ -165,9 +163,13 @@ ExitButton = Button(leftFrame, image=exit_icon, compound=LEFT, text="  Exit", fo
 ExitButton.pack(fill=X)
 # End of left menu
 
+# Start of flashcards frame
+flash_card_frame = Frame(root)
+flash_card_frame.pack(fill=BOTH)
+
 # Display total books flash card
-book_frame = Frame(root, bg="#343B64", bd=3, relief=RIDGE)
-book_frame.place(x=400, y=125, width=280, height=200)
+book_frame = Frame(flash_card_frame, bg="#343B64", bd=3, relief=RIDGE)
+book_frame.pack(fill=X)
 
 
 bookshelf_icon = PhotoImage(file="images\\bookshelf.png")
@@ -179,8 +181,9 @@ total_books_count = Label(book_frame, text="150", font=("times new roman", 20, '
 total_books_count.pack()
 
 # Diplay total students flash card
-student_frame = Frame(root, bg="#11523C", bd=3, relief=RIDGE)
-student_frame.place(x=750, y=125, width=280, height=200)    
+student_frame = Frame(flash_card_frame, bg="#11523C", bd=3, relief=RIDGE)
+student_frame.pack(fill=X)   
+
 students_icon = PhotoImage(file="images\\group.png")
 studentsLabel = Label(student_frame, image=students_icon, bg="#11523C")
 studentsLabel.pack(pady=10)
@@ -190,8 +193,9 @@ total_students_count = Label(student_frame, text="120", font=("times new roman",
 total_students_count.pack()
 
 # Display active loans flash card
-loan_frame = Frame(root, bg="#7A4A91", bd=3, relief=RIDGE)
-loan_frame.place(x=400, y=380, width=280, height=200)
+loan_frame = Frame(flash_card_frame, bg="#7A4A91", bd=3, relief=RIDGE)
+loan_frame.pack(fill=X)
+
 loan_icon = PhotoImage(file="images\\borrowed_book.png")
 loanLabel = Label(loan_frame, image=loan_icon, bg="#7A4A91")
 loanLabel.pack(pady=10)
@@ -199,7 +203,7 @@ total_loan_label = Label(loan_frame, text="Active Loans", font=("times new roman
 total_loan_label.pack()
 total_loan_count = Label(loan_frame, text="53", font=("times new roman", 20, 'bold'), bg="#7A4A91", fg="white")
 total_loan_count.pack()
-
+# End of flashcards frame
 
 
 root.mainloop() 
