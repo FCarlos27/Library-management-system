@@ -1,37 +1,32 @@
-from database import get_connection
-from datetime import datetime, timedelta
-import sqlite3
+from database import connect_database
+import pymysql
 
-def add_book(title, author, quantity):
+def add_book(title, author, quantity, year, edition="", language=""):
     # Adds a new book to BOOKS table or increases quantity if it already exists
+    conn, cursor = connect_database()
     try:
-        conn = get_connection()
-        cursor = conn.cursor()
-
         # If book exists, update quantity
         if search_book(title):
             increase_book_quantity(title, quantity)
             return "updated"
 
         # Book doesn't exist, insert new record
-        cursor.execute("INSERT INTO BOOKS (title, author, quantity) VALUES (?, ?, ?)",
-            (title.strip(), author.strip(), quantity)
+        cursor.execute("INSERT INTO BOOKS (title, author, quantity, year, edition, language) VALUES (%s, %s, %s, %s, %s, %s)",
+            (title.strip(), author.strip(), quantity, year, edition.strip(), language.strip())
         )
         conn.commit()
-        return "added"
+        return True
 
     except Exception as e:
-        return f"error: {str(e)}"
+        return e
 
     finally:
         conn.close()
     
 def view_books():
     # Display all books in the database with quantity > 0
+    conn, cursor = connect_database()
     try:
-        conn = get_connection()
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
         cursor.execute('SELECT * FROM BOOKS')
         books = [dict(row) for row in cursor.fetchall()]
         return [book for book in books if book['quantity'] > 0] or None
@@ -41,64 +36,54 @@ def view_books():
         conn.close()
 
  
-def search_book(book_name):
-    # Search for a book by title
-    try: 
-        conn = get_connection()
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute('SELECT * FROM BOOKS WHERE title = ?', (book_name,))
+def search_book(title):
+    conn, cursor = connect_database()
+    try:
+        query = "SELECT * FROM BOOKS WHERE title = %s"
+        cursor.execute(query, (title,))
         result = cursor.fetchone()
         return dict(result) if result else None
-    except Exception as e:
-        return f"error: {str(e)}"
+    except Exception: 
+        return False
     finally:
-        conn.close()
+        if conn:
+            conn.close()
     
-def search_book_by_id(book_id):
-    # Search for a book by ID
-    conn = get_connection()
-    conn.row_factory = sqlite3.Row
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM BOOKS WHERE id = ?', (book_id,))
-    result = cursor.fetchone()
-    conn.close()
+def increase_book_quantity(title, quantity=1):
+    conn, cursor = connect_database()
+    if search_book(title) is None:
+        return False
 
-    return dict(result) if result else None
-    
-def increase_book_quantity(book_name, quantity=1):
-    if search_book(book_name) is None:
-        return "Book not found."
-    
     try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT quantity FROM BOOKS WHERE title = ?', (book_name,))
+        query = "SELECT quantity FROM BOOKS WHERE title = %s"
+        cursor.execute(query, (title,))
         result = cursor.fetchone()
 
-        new_quantity = result[0] + quantity
-        cursor.execute('UPDATE BOOKS SET quantity = ? WHERE title = ?', (new_quantity, book_name))
+        new_quantity = result['quantity'] + quantity
+        query = 'UPDATE BOOKS SET quantity = %s WHERE title = %s'
+        cursor.execute(query, (new_quantity, title))
         conn.commit()
-        return new_quantity
-    except Exception as e:
-        return f"error: {str(e)}"
+        return True
+    except Exception:
+        return False
     finally:
-        conn.close()
+        if conn:
+            conn.close()
+            
 
     
-def decrease_book_quantity(book_name):
-    if search_book(book_name) is None:
+def decrease_book_quantity(title):
+    if search_book(title) is None:
         return "Book not found."
     
+    conn, cursor = connect_database()
     try:
-        conn = get_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT quantity FROM BOOKS WHERE title = ?', (book_name,))
+        cursor.execute('SELECT quantity FROM BOOKS WHERE title = %s', (title,))
         result = cursor.fetchone()
 
-        if result and result[0] > 0:
-            new_quantity = result[0] - 1
-            cursor.execute('UPDATE BOOKS SET quantity = ? WHERE title = ?', (new_quantity, book_name))
+        if result and result["quantity"] > 0:
+            new_quantity = result["quantity"] - 1
+            cursor.execute('UPDATE BOOKS SET quantity = %s WHERE title = %s', (new_quantity, title))
             conn.commit()
             return new_quantity
         else:
@@ -108,4 +93,4 @@ def decrease_book_quantity(book_name):
     finally:
         conn.close()
 
-
+print(decrease_book_quantity("Test Book"))
