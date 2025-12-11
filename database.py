@@ -21,13 +21,15 @@ def initialize_database():
 
     # Create STUDENTS table
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS STUDENTS (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            name VARCHAR(100) NOT NULL,
-            age INT NOT NULL,
-            phone VARCHAR(20) NOT NULL,
-            total_penalty INT DEFAULT 0
-        ) ENGINE=InnoDB;
+            CREATE TABLE IF NOT EXISTS STUDENTS (
+                id INT PRIMARY KEY AUTO_INCREMENT,
+                name VARCHAR(100) NOT NULL,
+                birthdate DATE,
+                phone VARCHAR(20) NOT NULL,
+                email VARCHAR(100),
+                address VARCHAR(255),
+                total_penalty INT DEFAULT 0
+            ) ENGINE=InnoDB;
     """)
 
     # Create BOOKS table

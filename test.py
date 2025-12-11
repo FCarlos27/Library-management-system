@@ -1,5 +1,6 @@
 from tkinter import *
 from books import book_form
+from students import student_form
 from database import initialize_database
 
 initialize_database()
@@ -35,11 +36,11 @@ menuLabel = Label(leftFrame, text="Menu", font=("times new roman", 20, "bold"), 
 menuLabel.pack(fill=BOTH)
 
 book_icon = PhotoImage(file="images\\book.png")
-BookButton = Button(leftFrame, image=book_icon, compound=LEFT, text="  Books", font=("times new roman", 20, 'bold'), bg="white", fg="black", cursor="hand2", anchor='w', padx=12, command=lambda: book_form(root))
+BookButton = Button(leftFrame, image=book_icon, compound=LEFT, text="  Books", font=("times new roman", 20, 'bold'), bg="white", fg="black", cursor="hand2", anchor='w', padx=12, command=lambda: [destroy_all(root), book_form(root)])
 BookButton.pack(fill=X)
 
 student_icon = PhotoImage(file="images\\student.png")
-StudentButton = Button(leftFrame, image=student_icon, compound=LEFT, text="  Students", font=("times new roman", 20, 'bold'), bg="white", fg="black", cursor="hand2", anchor='w', padx=12)
+StudentButton = Button(leftFrame, image=student_icon, compound=LEFT, text="  Students", font=("times new roman", 20, 'bold'), bg="white", fg="black", cursor="hand2", anchor='w', padx=12, command=lambda: [destroy_all(root),student_form(root)])
 StudentButton.pack(fill=X)
 
 borrow_icon = PhotoImage(file="images\\borrow.png")
@@ -96,6 +97,11 @@ total_loan_count = Label(loan_frame, text="53", font=("times new roman", 20, 'bo
 total_loan_count.pack()
 # End of flashcards frame
 
+def destroy_all(root):
+    for widget in root.winfo_children():
+        if widget not in (leftFrame, title_frame, subtitleLabel,
+                         flash_card_frame):
+            widget.destroy()
 
 root.mainloop() 
 

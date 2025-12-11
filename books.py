@@ -82,7 +82,7 @@ def book_form(root):
     treeview_data()
     # End of top frame
 
-    # Start of middle frame
+    # Start of bottom frame
     bottom_frame = Frame(books_frame, bg ="white")
     bottom_frame.pack(anchor=CENTER)
 
@@ -146,7 +146,7 @@ def book_form(root):
                                                                      b_quantity_entry, b_year_combobox,
                                                                      b_language_entry, b_edition_entry, True))
     clear_btn.grid(row=4, column=3, padx=10, pady=20)
-    # End of middle frame
+    # End of bottom frame
     
 
 def add_book(title_entry, author_entry, quantity_entry, year_entry, language_entry, edition_entry=""):
