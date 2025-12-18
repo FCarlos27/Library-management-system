@@ -1,6 +1,7 @@
 from tkinter import *
 from books import book_form
 from students import student_form
+from loans import loans_form
 from database import initialize_database
 
 initialize_database()
@@ -44,7 +45,7 @@ StudentButton = Button(leftFrame, image=student_icon, compound=LEFT, text="  Stu
 StudentButton.pack(fill=X)
 
 borrow_icon = PhotoImage(file="images\\borrow.png")
-BorrowButton = Button(leftFrame, image=borrow_icon, compound=LEFT, text="  Loans", font=("times new roman", 20, 'bold'), bg="white", fg="black", cursor="hand2", anchor='w', padx=12)
+BorrowButton = Button(leftFrame, image=borrow_icon, compound=LEFT, text="  Loans", font=("times new roman", 20, 'bold'), bg="white", fg="black", cursor="hand2", anchor='w', padx=12, command=lambda: [destroy_all(root),loans_form(root)])
 BorrowButton.pack(fill=X)
 
 penalty_icon = PhotoImage(file="images\\warning.png")

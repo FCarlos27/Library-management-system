@@ -1,7 +1,63 @@
-from database import get_connection
-from books import search_book, decrease_book_quantity, increase_book_quantity
-from students import search_student
+from database import connect_database
+from tkinter import messagebox, ttk
+from tkinter import *
+from books import search_book, decrease_book_quantity, increase_book_quantity, create_book_treeview
+from students import search_student, student_form, create_student_treeview
 import sqlite3
+
+def loans_form(root):
+
+    loans_frame = Frame(root, bg="white", bd=2, relief=RIDGE)
+    loans_frame.place(x=205, y=98, height=585, width=1065)
+    header = Label(loans_frame, text="Loans Management", bg="#0B5345", fg="white", font=("times new roman", 15, "bold"), anchor="center")
+    header.pack(fill=X)
+
+    backbutton_image = PhotoImage(file="images\\return.png")
+    back_button = Button(loans_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: loans_frame.destroy())
+    back_button.place(x=5, y=0)
+
+    # Start of left frame
+    left_frame = Frame(loans_frame, bg="white", )
+    left_frame.pack(side=LEFT, fill=Y)
+
+    student_id_label = Label(left_frame, text="Student ID", bg="white", font=("times new roman", 12))
+    student_id_label.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+    student_id_entry = Entry(left_frame, font=("times new roman", 12), bd=2, relief=GROOVE)
+    student_id_entry.grid(row=0, column=1, padx=10, pady=10, sticky="w")
+
+    book_name_label = Label(left_frame, text="Book Name", bg="white", font=("times new roman", 12))
+    book_name_label.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+    book_name_entry = Entry(left_frame, font=("times new roman", 12), bd=2, relief=GROOVE)
+    book_name_entry.grid(row=1, column=1, padx=10, pady=10, sticky="w")
+
+    loan_date_label = Label(left_frame, text="Loan Date", bg="white", font=("times new roman", 12))
+    loan_date_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
+    loan_date_entry = Entry(left_frame, font=("times new roman", 12), bd=2, relief=GROOVE)
+    loan_date_entry.grid(row=2, column=1, padx=10, pady=10, sticky="w")
+
+    return_date_label = Label(left_frame, text="Return Date", bg="white", font=("times new roman", 12))
+    return_date_label.grid(row=3, column=0, padx=10, pady=10, sticky="w")
+    return_date_entry = Entry(left_frame, font=("times new roman", 12), bd=2, relief=GROOVE)
+    return_date_entry.grid(row=3, column=1, padx=10, pady=10)
+    # End of left frame
+
+    # Start of right frame
+    right_frame = Frame(loans_frame, bg="white")
+    right_frame.pack(side=RIGHT, fill=BOTH, expand=1)
+
+    student_frame = Frame(right_frame, bg="blue")
+    student_frame.pack(fill=BOTH, expand=1)
+
+    student_treeview = create_student_treeview(student_frame)
+    student_treeview.pack(fill=X, expand=1, anchor="s")
+
+    book_frame = Frame(right_frame, bg="red")
+    book_frame.pack(fill=BOTH, expand=1, pady=10)
+
+    book_treeview = create_book_treeview(book_frame)
+    book_treeview.pack(fill=X, expand=1, anchor="s")
+    # End of right frame
+    
 
 def borrow_book(student_id, book_name, loan_date, return_date, status='active'):
     # Adds a new loan to LOANS table and decreases book quantity.

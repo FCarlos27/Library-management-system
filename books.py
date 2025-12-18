@@ -25,6 +25,32 @@ def treeview_data():
     finally:
         conn.close()
 
+def create_book_treeview(parent_frame):
+    global book_treeview
+
+    vertical_scrollbar = Scrollbar(parent_frame, orient=VERTICAL)
+    book_treeview = ttk.Treeview(parent_frame, columns=("id", "title", "author", "quantity", "year", "edition", "language"), show="headings", yscrollcommand=vertical_scrollbar.set)
+    vertical_scrollbar.pack(side=RIGHT, fill=Y, pady=(10,0))
+    vertical_scrollbar.config(command=book_treeview.yview)
+    book_treeview.heading("id", text="Id", anchor="w")
+    book_treeview.heading("title", text="Title", anchor="w")
+    book_treeview.heading("author", text="Author", anchor="w")
+    book_treeview.heading("quantity", text="Quantity", anchor="w")
+    book_treeview.heading("year", text="Year", anchor="w")
+    book_treeview.heading("edition", text="Edition", anchor="w")
+    book_treeview.heading("language", text="Language", anchor="w")
+
+    book_treeview.column("id", width=20, anchor="w")
+    book_treeview.column("title", width=200, anchor="w")
+    book_treeview.column("author", width=140, anchor="w")
+    book_treeview.column("quantity", width=60, anchor="w")
+    book_treeview.column("year", width=60, anchor="w")
+    book_treeview.column("edition", width=60, anchor="w")
+    book_treeview.column("language", width=100, anchor="w")
+
+    treeview_data()
+    return book_treeview
+
 def book_form(root):
     global backbutton_image, book_treeview
 
@@ -58,27 +84,9 @@ def book_form(root):
                             cursor="hand2", command=lambda: treeview_data())
     showall_button.grid(row=0, column=3)
 
-    vertical_scrollbar = Scrollbar(top_frame, orient=VERTICAL)
-    book_treeview = ttk.Treeview(top_frame, columns=("id", "title", "author", "quantity", "year", "edition", "language"), show="headings", yscrollcommand=vertical_scrollbar.set)
-    vertical_scrollbar.pack(side=RIGHT, fill=Y, pady=(10,0))
-    vertical_scrollbar.config(command=book_treeview.yview)
+    book_treeview = create_book_treeview(top_frame)
     book_treeview.pack(pady=(10, 0), fill=BOTH)
-    book_treeview.heading("id", text="Id", anchor="w")
-    book_treeview.heading("title", text="Title", anchor="w")
-    book_treeview.heading("author", text="Author", anchor="w")
-    book_treeview.heading("quantity", text="Quantity", anchor="w")
-    book_treeview.heading("year", text="Year", anchor="w")
-    book_treeview.heading("edition", text="Edition", anchor="w")
-    book_treeview.heading("language", text="Language", anchor="w")
-
-    book_treeview.column("id", width=20, anchor="w")
-    book_treeview.column("title", width=200, anchor="w")
-    book_treeview.column("author", width=140, anchor="w")
-    book_treeview.column("quantity", width=60, anchor="w")
-    book_treeview.column("year", width=60, anchor="w")
-    book_treeview.column("edition", width=60, anchor="w")
-    book_treeview.column("language", width=100, anchor="w")
-
+    
     treeview_data()
     # End of top frame
 

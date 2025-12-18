@@ -28,6 +28,32 @@ def treeview_data():
     finally:
         conn.close()
 
+def create_student_treeview(parent_frame):
+    global student_treeview
+
+    vertical_scrollbar = Scrollbar(parent_frame, orient=VERTICAL)
+    student_treeview = ttk.Treeview(parent_frame, columns=("id", "name", "birthdate", "phone", "email", "address", "total_penalty"), show="headings")
+    vertical_scrollbar.pack(side=RIGHT, fill=Y, pady=(10,0))
+    vertical_scrollbar.config(command=student_treeview.yview)
+    student_treeview.heading("id", text="Id", anchor="w")
+    student_treeview.heading("name", text="Name", anchor="w")
+    student_treeview.heading("birthdate", text="Birthdate", anchor="w")
+    student_treeview.heading("phone", text="Phone", anchor="w")
+    student_treeview.heading("email", text="Email", anchor="w")
+    student_treeview.heading("address", text="Address", anchor="w")
+    student_treeview.heading("total_penalty", text="Penalties", anchor="w")
+
+    student_treeview.column("id", width=100, anchor="w")
+    student_treeview.column("name", width=120, anchor="w")
+    student_treeview.column("birthdate", width=60, anchor="w")
+    student_treeview.column("phone", width=80, anchor="w")  
+    student_treeview.column("email", width=200, anchor="w")
+    student_treeview.column("address", width=120, anchor="w")
+    student_treeview.column("total_penalty", width=60, anchor="w")
+    
+    treeview_data()
+    return student_treeview
+
 def student_form(root): 
     global student_treeview, backbutton_image
 
@@ -61,27 +87,9 @@ def student_form(root):
                             cursor="hand2", command=lambda: treeview_data())
     showall_button.grid(row=0, column=3)
 
-    vertical_scrollbar = Scrollbar(top_frame, orient=VERTICAL)
-    student_treeview = ttk.Treeview(top_frame, columns=("id", "name", "birthdate", "phone", "email", "address", "total_penalty"), show="headings", yscrollcommand=vertical_scrollbar.set)
-    vertical_scrollbar.pack(side=RIGHT, fill=Y, pady=(10,0))
-    vertical_scrollbar.config(command=student_treeview.yview)
+    student_treeview = create_student_treeview(top_frame)
     student_treeview.pack(pady=(10, 0), fill=BOTH, expand=TRUE)
-    student_treeview.heading("id", text="Id", anchor="w")
-    student_treeview.heading("name", text="Name", anchor="w")
-    student_treeview.heading("birthdate", text="Birthdate", anchor="w")
-    student_treeview.heading("phone", text="Phone", anchor="w")
-    student_treeview.heading("email", text="Email", anchor="w")
-    student_treeview.heading("address", text="Address", anchor="w")
-    student_treeview.heading("total_penalty", text="Penalties", anchor="w")
-
-    student_treeview.column("id", width=25, anchor="w")
-    student_treeview.column("name", width=200, anchor="w")
-    student_treeview.column("birthdate", width=80, anchor="w")
-    student_treeview.column("phone", width=80, anchor="w")
-    student_treeview.column("email", width=100, anchor="w")
-    student_treeview.column("address", width=120, anchor="w")
-    student_treeview.column("total_penalty", width=5, anchor="w")
-
+    
     treeview_data()
     # End of top frame
 
@@ -143,6 +151,8 @@ def student_form(root):
                                                                    s_phone_entry, s_email_entry, s_address_entry, True))
     clear_btn.grid(row=4, column=3, padx=(20,0), pady=20)
     # End of bottom frame
+
+    return student_treeview
 
 
 def add_student(id_entry, name_entry, birthdate_entry, phone_entry, email_entry, address_entry):
