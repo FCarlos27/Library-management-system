@@ -337,15 +337,18 @@ def clear_fields(id, name, birthdate, phone, email, address, check):
     if check:
         student_treeview.selection_remove(student_treeview.selection())
 
-def select_student(event, id_entry, name_entry, birthdate_entry,
-                   phone_entry, email_entry, address_entry):
+def select_student(event, id_entry, name_entry=None, birthdate_entry=None,
+                   phone_entry=None, email_entry=None, address_entry=None):
     index = student_treeview.selection()
     if not index:
         return
     item_id = index[0]
     content = student_treeview.item(item_id)
     row = content['values']
-
+    if name_entry is None:
+        id_entry.delete(0, END)
+        id_entry.insert(0, row[0])
+        return
     clear_fields(id_entry, name_entry, birthdate_entry,
                  phone_entry, email_entry, address_entry, False)
     id_entry.insert(0, row[0])

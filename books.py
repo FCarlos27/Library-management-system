@@ -209,13 +209,17 @@ def clear_fields(title_entry, author_entry, quantity_entry, year_entry,
         book_treeview.selection_remove(book_treeview.selection())
     
 
-def select_data(event, title_entry, author_entry, quantity_entry, year_combobox, 
-                language_entry, edition_entry):
+def select_data(event, title_entry, author_entry=None, quantity_entry=None, year_combobox=None, 
+                language_entry=None, edition_entry=None):
     index = book_treeview.selection()
     if not index:
         return
     content = book_treeview.item(index)
     row = content["values"]
+    if author_entry is None:
+        title_entry.delete(0, END)
+        title_entry.insert(0, row[1])
+        return
     clear_fields(title_entry, author_entry, quantity_entry, year_combobox, 
                  edition_entry, language_entry, False)
     title_entry.insert(0, row[1])
@@ -272,8 +276,18 @@ def delete_data(title_entry, author_entry, quantity_entry, year_combobox,
         finally:
             conn.close()
 
-def search_book(title, author, language="", edition=""):
-    conn, cursor = connect_database()
+def search_book(title, author="", language="", edition=""):
+    conn, cursor = connect_database() 
+    if author == "":
+        try:
+            cursor.execute("SELECT * FROM BOOKS WHERE title = %s", (title,))
+            result = cursor.fetchone()
+            return dict(result) if result else None
+        except Exception as e:
+            return e
+        finally:
+            if conn:
+                conn.close()
     try:
         cursor.execute("SELECT * FROM BOOKS WHERE title = %s and author = %s and language = %s and edition = %s", 
                        (title, author, language, edition))
@@ -335,6 +349,17 @@ def search_book_title_author(search_combobox, search_entry):
         finally:
             conn.close()
 
+def search_book_id(id):
+    try:
+        conn, cursor = connect_database()
+        cursor.execute("SELECT * FROM BOOKS WHERE id = %s", (id,))
+        result = cursor.fetchone()
+        return dict(result) if result else None
+    except Exception as e:
+        return e
+    finally:
+        if conn:
+            conn.close()
 
 def increase_book_quantity(title, edition, quantity=1):
     conn, cursor = connect_database()

@@ -47,15 +47,16 @@ def initialize_database():
 
     # Create LOANS table
     cursor.execute("""
-        CREATE TABLE IF NOT EXISTS LOANS (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            student_id INT NOT NULL,
-            book_name VARCHAR(255) NOT NULL,
-            loan_date DATE NOT NULL,
-            return_date DATE,
-            status VARCHAR(50),
-            FOREIGN KEY (student_id) REFERENCES STUDENTS(id)
-        ) ENGINE=InnoDB;
+    CREATE TABLE IF NOT EXISTS LOANS (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    student_id INT NOT NULL,
+    book_id INT NOT NULL,
+    loan_date DATE NOT NULL,
+    return_date DATE,
+    status VARCHAR(50),
+    FOREIGN KEY (student_id) REFERENCES STUDENTS(id),
+    FOREIGN KEY (book_id) REFERENCES BOOKS(id)
+    ) ENGINE=InnoDB;
     """)
 
     # Create PENALTIES table
