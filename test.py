@@ -26,10 +26,10 @@ subtitleLabel = Label(root, text="Welcome to Library Management System\t Date: 2
 subtitleLabel.pack(fill=X)
 
 # Star of left menu
-leftFrame = Frame(root, bg="#f0f9ff")
+leftFrame = Frame(root, width=100, bg="#f0f9ff")
 leftFrame.pack(fill=Y, side=LEFT)
 
-logo_Image = PhotoImage(file="images\\librarian.png")
+logo_Image = PhotoImage(file="images\\librarian_resized.png")
 imageLabel = Label(leftFrame, image=logo_Image, bg="#f0f9ff")
 imageLabel.pack()
 

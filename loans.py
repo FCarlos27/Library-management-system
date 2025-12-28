@@ -2,14 +2,15 @@ from database import connect_database
 from tkinter import messagebox, ttk
 from tkcalendar import DateEntry
 from tkinter import * 
-from books import search_book, search_book_id, decrease_book_quantity, increase_book_quantity, create_book_treeview, make_optional, search_book_title_author
+from books import search_book, decrease_book_quantity, increase_book_quantity, create_book_treeview, make_optional, search_book_title_author, make_optional
 from books import select_data as select_book_data
 from books import treeview_data as book_treeview_data
-from students import search_student, student_form, create_student_treeview, search_bar
+from students import search_student, create_student_treeview, search_bar
 from students import select_student as select_student_data
 from students import treeview_data as student_treeview_data
 import sqlite3, datetime
 
+flag = False # For clearing fields
 
 def treeview_data():
     global loan_treeview
@@ -65,17 +66,25 @@ def create_loan_treeview(parent_frame, scrollbar):
     return loan_treeview
 
 def loans_form(root):
-    global student_treeview, book_treeview, right_frame, backbutton_image
-    global student_id_entry, book_name_entry
+    global student_treeview, book_treeview, right_frame, backbutton_image, delete_button, update_button
+    global student_id_entry, book_name_entry, loan_date_entry, return_date_entry, status_combobox
 
     loans_frame = Frame(root, bg="white", bd=2, relief=RIDGE)
     loans_frame.place(x=205, y=98, height=585, width=1065)
-    header = Label(loans_frame, text="Loans Management", bg="#0B5345", fg="white", font=("times new roman", 15, "bold"), anchor="center")
-    header.pack(fill=X)
+    header_frame = Frame(loans_frame, bg="#0B5345")
+    header_frame.pack(fill=X)
+
+    header = Label(header_frame, text="Loans Management",
+                    bg="#0B5345", fg="white",
+                    font=("times new roman", 15, "bold"),
+                    anchor="center")
+    header.grid(row=0, column=1, sticky="W", padx=350)
 
     backbutton_image = PhotoImage(file="images\\return.png")
-    back_button = Button(loans_frame, image=backbutton_image, cursor="hand2", bg="#0B5345", bd=0, command=lambda: loans_frame.destroy())
-    back_button.place(x=5, y=0)
+    back_button = Button(header_frame, image=backbutton_image,
+                            cursor="hand2", bg="#0B5345", bd=0,
+                            command=lambda: loans_frame.destroy())
+    back_button.grid(row=0, column=0, padx=5)
 
     # Start of left frame
     left_frame = Frame(loans_frame, bg="white", )
@@ -93,21 +102,42 @@ def loans_form(root):
 
     loan_date_label = Label(left_frame, text="Loan Date", bg="white", font=("times new roman", 12))
     loan_date_label.grid(row=2, column=0, padx=10, pady=10, sticky="w")
-    loan_date_entry = DateEntry(left_frame, font=("times new roman", 12), bd=2, relief=GROOVE, date_pattern="mm/dd/yyyy")
-    loan_date_entry.grid(row=2, column=1, padx=10, pady=10)
+    loan_date_entry = DateEntry(left_frame, font=("times new roman", 12), bd=2, relief=GROOVE, date_pattern="mm/dd/yyyy", width=16)
+    loan_date_entry.grid(row=2, column=1, padx=4, pady=10)
 
     return_date_label = Label(left_frame, text="Return Date", bg="white", font=("times new roman", 12))
     return_date_label.grid(row=3, column=0, padx=10, pady=10, sticky="w")
-    return_date_entry = DateEntry(left_frame, font=("times new roman", 12), bd=2, relief=GROOVE, date_pattern="mm/dd/yyyy")
-    return_date_entry.grid(row=3, column=1, padx=10, pady=10)
+    return_date_entry = DateEntry(left_frame, font=("times new roman", 12), bd=2, relief=GROOVE, date_pattern="mm/dd/yyyy", width=16)
+    return_date_entry.grid(row=3, column=1, padx=4, pady=10)
 
-    add_button = Button(left_frame, text="Add Loan", font=("times new roman", 12), bg="#0B5345", fg="white", cursor="hand2",
-                        width=15, command=lambda: add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_entry))
-    add_button.grid(row=4, column=0, columnspan=2, pady=20) 
+    status_label = Label(left_frame, text="Loan Status", bg="white", font=("times new roman", 12))
+    status_label.grid(row=4, column=0, padx=10, pady=10, sticky="w")
+    status_combobox = ttk.Combobox(left_frame, values=["active", "returned", "overdue", "lost", "renewed"], 
+                                   font=("times new roman", 12), state="readonly", width=16)
+    status_combobox.set("active")
+    status_combobox.grid(row=4, column=1, padx=(16,0), pady=10, sticky="w")
+    
+    add_button = Button(left_frame, text="Add", font=("times new roman", 12, "bold"), bg="#0B5345", fg="white", cursor="hand2",
+                        width=12, command=lambda: add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_entry))
+    add_button.grid(row=5, column=0, columnspan=1, padx=(5,0), pady=20)
 
-    view_loans_button = Button(left_frame, text="View Loans", font=("times new roman", 12), bg="#0B5345", fg="white", cursor="hand2",
+    update_button = Button(left_frame, text="Update", font=("times new roman", 12, "bold"), bg="#0B5345", fg="white", cursor="hand2",
+                        width=12, command=lambda: update_loan(student_id_entry.get(), book_name_entry.get(), loan_date_entry.get_date().strftime("%y-%m-%d"), return_date_entry.get_date().strftime("%y-%m-%d"), status_combobox.get()))
+    update_button.grid(row=5, column=1, columnspan=1, padx=(5,0),pady=10)
+    update_button.config(state=DISABLED)
+
+    delete_button = Button(left_frame, text="Delete", font=("times new roman", 12, "bold"), bg="#0B5345", fg="white", cursor="hand2",
+                        width=12, command=lambda: delete_loan(student_id_entry.get(), book_name_entry.get()))   
+    delete_button.grid(row=6, column=0, columnspan=1, padx=(5,0),pady=10)
+    delete_button.config(state=DISABLED)
+
+    clear_button = Button(left_frame, text="Clear", font=("times new roman", 12, "bold"), bg="#0B5345", fg="white", cursor="hand2",
+                        width=12, command=lambda: clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, flag))
+    clear_button.grid(row=6, column=1, columnspan=1, padx=(5,0), pady=10)
+
+    view_loans_button = Button(left_frame, text="View Loans", font=("times new roman", 12, "bold"), bg="#0B5345", fg="white", cursor="hand2",
                         width=15, command=lambda: show_loans())
-    view_loans_button.grid(row=5, column=0, columnspan=2, pady=10)
+    view_loans_button.grid(row=7, column=0, columnspan=2, pady=10)
     # End of left frame
 
     # Start of right frame
@@ -115,6 +145,9 @@ def loans_form(root):
     # End of right frame
 
 def add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_entry):
+    if not student_id_entry.get() or not book_name_entry.get():
+        messagebox.showwarning("Warning", "Please fill in all required fields.")
+        return
     try:
         conn, cursor = connect_database()
 
@@ -123,12 +156,8 @@ def add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_ent
         loan_date = loan_date_entry.get_date()
         return_date = return_date_entry.get_date()
 
-        if search_student(student_id) is None or student_id == "": 
+        if search_student(student_id) is None:
             messagebox.showwarning("Warning", "Enter a valid student ID.")
-            return
-
-        if book_name == "":
-            messagebox.showwarning("Warning", "Enter a valid book name.")
             return
         
         book = search_book(book_name)
@@ -150,7 +179,7 @@ def add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_ent
         decrease_book_quantity(book_name)
         student_treeview_data()
         book_treeview_data()
-        clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, True)
+        clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, False)
         messagebox.showinfo("Success", "Loan recorded successfully.")
     except Exception as e:
         print(e)
@@ -158,25 +187,68 @@ def add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_ent
     finally:
         conn.close()
 
-def return_book(student_id, book_name):
-    # Modifies the LOANS table to mark a book as returned and increases book quantity.
+def update_loan(student_id, book_name, loan_date, return_date, status):
+    if not student_id or not book_name:
+        messagebox.showwarning("Warning", "Please select a loan from the record.")
+        return
+    confirm = messagebox.askyesno("Confirm Update", "Are you sure you want to update this loan?")
+    if not confirm:
+        return
     try:
-        conn = get_connection()
-        cursor = conn.cursor()
+        conn, cursor = connect_database()
 
-        # Check if loan record exists
-        if search_loan(student_id, book_name) is None:
-            return "No loan record found for this student and book."
-        
-        cursor.execute('UPDATE LOANS SET status = "returned" WHERE student_id = ? AND book_name = ?', 
-                     (student_id, book_name))
+        cursor.execute("""
+            UPDATE LOANS
+            SET loan_date = %s,
+                return_date = %s,
+                status = %s
+            WHERE student_id = %s
+              AND book_id = (
+                  SELECT b.id
+                  FROM BOOKS b
+                  WHERE b.title = %s
+              )
+        """, (loan_date, return_date, status, student_id, book_name))
+
         conn.commit()
-        increase_book_quantity(book_name)
-        return "Book returned. Loan status updated"
+        messagebox.showinfo("Success", "Loan updated successfully.")
+        if status == "returned":
+            increase_book_quantity(book_name, "")
+        clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, True)
+        treeview_data()
+
     except Exception as e:
-        return f"error: {str(e)}"
+        messagebox.showerror("Error", f"error: {str(e)}")
     finally:
-        conn.close()    
+        conn.close()
+
+def delete_loan(student_id, book_name):
+    if not student_id or not book_name:
+        messagebox.showwarning("Warning", "Please select a loan from the record.")
+        return
+    
+    try:
+        conn, cursor = connect_database()
+
+        cursor.execute("""
+            DELETE FROM LOANS
+            WHERE student_id = %s
+              AND book_id = (
+                  SELECT b.id
+                  FROM BOOKS b
+                  WHERE b.title = %s
+              )
+        """, (student_id, book_name))
+
+        conn.commit()
+        messagebox.showinfo("Success", "Loan deleted successfully.")
+        clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, True)
+        treeview_data()
+        increase_book_quantity(book_name, "")
+    except Exception as e:
+        messagebox.showerror("Error", f"error: {str(e)}")
+    finally:
+        conn.close()
 
 def search_loan(search_combobox, search_entry):
     global loan_treeview
@@ -272,9 +344,8 @@ def search_loan(search_combobox, search_entry):
         if conn:
             conn.close()
   
-
 def show_loans():
-    global right_frame, loan_treeview, back_button_image
+    global right_frame, loan_treeview, back_button_image, flag
 
     for widget in right_frame.winfo_children():
         widget.destroy()
@@ -305,6 +376,7 @@ def show_loans():
     # Default widget inside the frame
     search_entry = Entry(search_entry_frame, font=("times new roman", 12), bd=2, bg="light gray")
     search_entry.pack(fill="both", expand=True)
+    make_optional(search_entry)
 
     def update_search_entry(event):
         global new_entry
@@ -329,6 +401,7 @@ def show_loans():
             )
         else:
             new_entry = Entry(search_entry_frame, font=("times new roman", 12), bd=2, bg="light gray")
+            make_optional(new_entry)
 
         new_entry.pack(fill="both", expand=True)
 
@@ -343,13 +416,39 @@ def show_loans():
                                command=lambda: treeview_data())
     showall_button.grid(row=0, column=4, pady=5)
 
+    delete_button.config(state=ACTIVE)
+    update_button.config(state=ACTIVE)
+
+    flag = True # For clearing fields
+
     vertical_scrollbar = Scrollbar(right_frame, orient=VERTICAL)
     vertical_scrollbar.pack(side=RIGHT, fill=Y, pady=(0, 40))
     loan_treeview = create_loan_treeview(right_frame, vertical_scrollbar)
     loan_treeview.pack(fill=BOTH, expand=1, anchor="n", pady=(0, 40))
+    loan_treeview.bind("<ButtonRelease-1>", lambda event: select_loan(event, student_id_entry, book_name_entry, loan_date_entry, return_date_entry, status_combobox))
+
+def select_loan(event, student_id_entry, book_name_entry, loan_date_entry, return_date_entry, status_combobox):
+    global loan_treeview
+    selected_item = loan_treeview.focus()
+    if not selected_item:
+        return
+    clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, True)
+    values = loan_treeview.item(selected_item, 'values')
+
+    student_id_entry.insert(0, values[0])
+    student_id_entry.config(state='disabled')
+
+    book_name_entry.insert(0, values[2])
+    book_name_entry.config(state='disabled')
+
+    loan_date_entry.set_date(datetime.datetime.strptime(values[3], "%Y-%m-%d"))
+
+    return_date_entry.set_date(datetime.datetime.strptime(values[4], "%Y-%m-%d"))
+
+    status_combobox.set(values[5])
 
 def build_right_frame(parent_frame, destroy=False):
-    global right_frame, student_treeview, book_treeview
+    global right_frame, student_treeview, book_treeview, flag
 
     if destroy:
         for widget in right_frame.winfo_children():
@@ -395,6 +494,9 @@ def build_right_frame(parent_frame, destroy=False):
     showall_book_button = Button(search_book_frame, text="Show All", font=("times new roman", 12), bg="#0B5345", fg="white", cursor="hand2",
                                 width=10, command=lambda: book_treeview_data())
     showall_book_button.grid(row=0, column=3, pady=5)
+    
+    delete_button.config(state=DISABLED)
+    update_button.config(state=DISABLED)
 
     book_treeview = create_book_treeview(book_frame)
     book_treeview.pack(fill=X, expand=1, anchor="s")
@@ -403,13 +505,18 @@ def build_right_frame(parent_frame, destroy=False):
     make_optional(search_student_entry)
     make_optional(search_book_entry)
 
+    flag = False # For clearing fields
     return right_frame
     
 def clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, check):
-    if check:
-        student_treeview.selection_remove(student_treeview.selection())
-        book_treeview.selection_remove(book_treeview.selection())
+    student_id_entry.config(state='normal')
     student_id_entry.delete(0, END)
+    book_name_entry.config(state='normal')
     book_name_entry.delete(0, END)
     loan_date_entry.set_date(datetime.datetime.now())
     return_date_entry.set_date(datetime.datetime.now())
+    if not check:
+        book_treeview.selection_remove(book_treeview.selection())
+        student_treeview.selection_remove(student_treeview.selection())
+    else:
+        loan_treeview.selection_remove(loan_treeview.selection())

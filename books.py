@@ -56,12 +56,16 @@ def book_form(root):
 
     books_frame = Frame(root,bg="white", bd=2, relief=RIDGE)
     books_frame.place(x=205, y= 98, relheight=1, width=1065)
-    header = Label(books_frame, text="Book Management", font=("times new roman", 15, 'bold'), bg="#2b7192", fg="white", anchor='center')
-    header.pack(fill=X)
 
+    header_frame = Frame(books_frame, bg="#2b7192", height=40)
+    header_frame.pack(fill=X)
+
+    header = Label(header_frame, text="Book Management", font=("times new roman", 15, 'bold'), bg="#2b7192", fg="white", anchor='center')
+    header.grid(row=0, column=1, sticky="W", padx=350)
+    
     backbutton_image = PhotoImage(file="images\\return.png")
-    back_button = Button(books_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: books_frame.destroy())
-    back_button.place(x=5, y=0)
+    back_button = Button(header_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: books_frame.destroy())
+    back_button.grid(row=0, column=0, padx=5)
 
     # Start of top frame
     top_frame = Frame(books_frame, bg="#f0f9ff")
