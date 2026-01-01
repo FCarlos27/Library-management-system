@@ -43,11 +43,13 @@ def treeview_data():
         if conn:
             conn.close()
 
-def create_loan_treeview(parent_frame, scrollbar):
+def create_loan_treeview(parent_frame):
     global loan_treeview
-
-    loan_treeview = ttk.Treeview(parent_frame, columns=("student_id", "student_name", "book_name", "loan_date", "return_date", "status"), show="headings", yscrollcommand=scrollbar.set if scrollbar else None)
-    scrollbar.config(command=loan_treeview.yview)
+    
+    vertical_scrollbar = Scrollbar(parent_frame, orient=VERTICAL)
+    loan_treeview = ttk.Treeview(parent_frame, columns=("student_id", "student_name", "book_name", "loan_date", "return_date", "status"), show="headings", yscrollcommand=vertical_scrollbar)
+    vertical_scrollbar.pack(side=RIGHT, fill=Y, pady=(10,0))
+    vertical_scrollbar.config(command=loan_treeview.yview)
     loan_treeview.heading("student_id", text="Student ID", anchor="w")
     loan_treeview.heading("student_name", text="Student Name", anchor="w")
     loan_treeview.heading("book_name", text="Book Name", anchor="w")
@@ -66,7 +68,7 @@ def create_loan_treeview(parent_frame, scrollbar):
     return loan_treeview
 
 def loans_form(root):
-    global student_treeview, book_treeview, right_frame, backbutton_image, delete_button, update_button
+    global student_treeview, book_treeview, right_frame, backbutton_image, add_button, delete_button, update_button
     global student_id_entry, book_name_entry, loan_date_entry, return_date_entry, status_combobox
 
     loans_frame = Frame(root, bg="white", bd=2, relief=RIDGE)
@@ -118,7 +120,7 @@ def loans_form(root):
     status_combobox.grid(row=4, column=1, padx=(16,0), pady=10, sticky="w")
     
     add_button = Button(left_frame, text="Add", font=("times new roman", 12, "bold"), bg="#0B5345", fg="white", cursor="hand2",
-                        width=12, command=lambda: add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_entry))
+                        width=12, disabledforeground="blue", command=lambda: add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_entry))
     add_button.grid(row=5, column=0, columnspan=1, padx=(5,0), pady=20)
 
     update_button = Button(left_frame, text="Update", font=("times new roman", 12, "bold"), bg="#0B5345", fg="white", cursor="hand2",
@@ -418,12 +420,11 @@ def show_loans():
 
     delete_button.config(state=ACTIVE)
     update_button.config(state=ACTIVE)
+    add_button.config(state=DISABLED)
 
     flag = True # For clearing fields
 
-    vertical_scrollbar = Scrollbar(right_frame, orient=VERTICAL)
-    vertical_scrollbar.pack(side=RIGHT, fill=Y, pady=(0, 40))
-    loan_treeview = create_loan_treeview(right_frame, vertical_scrollbar)
+    loan_treeview = create_loan_treeview(right_frame)
     loan_treeview.pack(fill=BOTH, expand=1, anchor="n", pady=(0, 40))
     loan_treeview.bind("<ButtonRelease-1>", lambda event: select_loan(event, student_id_entry, book_name_entry, loan_date_entry, return_date_entry, status_combobox))
 
@@ -497,6 +498,7 @@ def build_right_frame(parent_frame, destroy=False):
     
     delete_button.config(state=DISABLED)
     update_button.config(state=DISABLED)
+    add_button.config(state=ACTIVE)
 
     book_treeview = create_book_treeview(book_frame)
     book_treeview.pack(fill=X, expand=1, anchor="s")
