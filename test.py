@@ -2,6 +2,7 @@ from tkinter import *
 from books import book_form
 from students import student_form
 from loans import loans_form
+from penalties import penalties_form
 from database import initialize_database
 
 initialize_database()
@@ -49,7 +50,7 @@ BorrowButton = Button(leftFrame, image=borrow_icon, compound=LEFT, text="  Loans
 BorrowButton.pack(fill=X)
 
 penalty_icon = PhotoImage(file="images\\warning.png")
-PenaltyButton = Button(leftFrame, image=penalty_icon, compound=LEFT, text="  Penalties", font=("times new roman", 20, 'bold'), bg="white", fg="black", cursor="hand2", anchor='w', padx=12)
+PenaltyButton = Button(leftFrame, image=penalty_icon, compound=LEFT, text="  Penalties", font=("times new roman", 20, 'bold'), bg="white", fg="black", cursor="hand2", anchor='w', padx=12, command=lambda: [destroy_all(root),penalties_form(root)])
 PenaltyButton.pack(fill=X)
 
 exit_icon = PhotoImage(file="images\\exit.png")
