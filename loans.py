@@ -17,7 +17,7 @@ def treeview_data():
     try:
         conn, cursor = connect_database()
         cursor.execute("""
-            SELECT L.student_id, S.name AS student_name,
+            SELECT L.id AS loan_id, L.student_id, S.name AS student_name,
                    B.title AS book_name,
                    L.loan_date, L.return_date, L.status
             FROM LOANS L
@@ -28,7 +28,7 @@ def treeview_data():
 
         loan_treeview.delete(*loan_treeview.get_children())
         for row in results:
-            loan_treeview.insert("", END, values=(
+            loan_treeview.insert("", END, iid=row["loan_id"], values=(
                 row['student_id'],
                 row['student_name'],
                 row['book_name'],
@@ -120,7 +120,7 @@ def loans_form(root):
     status_combobox.grid(row=4, column=1, padx=(16,0), pady=10, sticky="w")
     
     add_button = Button(left_frame, text="Add", font=("times new roman", 12, "bold"), bg="#0B5345", fg="white", cursor="hand2",
-                        width=12, disabledforeground="blue", command=lambda: add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_entry))
+                        width=12, command=lambda: add_loan(student_id_entry, book_name_entry, loan_date_entry, return_date_entry))
     add_button.grid(row=5, column=0, columnspan=1, padx=(5,0), pady=20)
 
     update_button = Button(left_frame, text="Update", font=("times new roman", 12, "bold"), bg="#0B5345", fg="white", cursor="hand2",
@@ -428,11 +428,27 @@ def show_loans():
     loan_treeview.pack(fill=BOTH, expand=1, anchor="n", pady=(0, 40))
     loan_treeview.bind("<ButtonRelease-1>", lambda event: select_loan(event, student_id_entry, book_name_entry, loan_date_entry, return_date_entry, status_combobox))
 
-def select_loan(event, student_id_entry, book_name_entry, loan_date_entry, return_date_entry, status_combobox):
+def select_loan(event, student_id_entry, book_name_entry, loan_date_entry, return_date_entry, status_combobox, loan_id_entry=None):
     global loan_treeview
     selected_item = loan_treeview.focus()
     if not selected_item:
         return
+    
+    # Capture the loan_id from iid
+    loan_id = selected_item  
+
+    if loan_id_entry:
+        values = loan_treeview.item(selected_item, 'values')
+
+        student_id_entry.insert(0, values[0])
+        student_id_entry.config(state='disabled')
+
+        book_name_entry.insert(0, values[2])
+        book_name_entry.config(state='disabled')
+
+        loan_id_entry.insert(0, loan_id)
+        return
+    
     clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, True)
     values = loan_treeview.item(selected_item, 'values')
 
@@ -443,11 +459,10 @@ def select_loan(event, student_id_entry, book_name_entry, loan_date_entry, retur
     book_name_entry.config(state='disabled')
 
     loan_date_entry.set_date(datetime.datetime.strptime(values[3], "%Y-%m-%d"))
-
     return_date_entry.set_date(datetime.datetime.strptime(values[4], "%Y-%m-%d"))
 
     status_combobox.set(values[5])
-
+    
 def build_right_frame(parent_frame, destroy=False):
     global right_frame, student_treeview, book_treeview, flag
 
