@@ -65,8 +65,9 @@ def initialize_database():
             id INT PRIMARY KEY AUTO_INCREMENT,
             student_id INT NOT NULL,
             loan_id INT NOT NULL,
-            book_name VARCHAR(255) NOT NULL,
+            penalty_date DATE NOT NULL DEFAULT CURRENT_DATE,
             reason TEXT,
+            amount FLOAT, 
             FOREIGN KEY (student_id) REFERENCES STUDENTS(id),
             FOREIGN KEY (loan_id) REFERENCES LOANS(id)
         ) ENGINE=InnoDB;

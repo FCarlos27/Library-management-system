@@ -447,8 +447,13 @@ def select_loan(event, student_id_entry, book_name_entry, loan_date_entry, retur
         book_name_entry.config(state='disabled')
 
         loan_id_entry.insert(0, loan_id)
+        loan_id_entry.config(state='disabled')
         return
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 87b1e7d (feat: refactor penalties form to use less functions, delete book_name from penalties table)
     clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, True)
     values = loan_treeview.item(selected_item, 'values')
 
@@ -462,6 +467,7 @@ def select_loan(event, student_id_entry, book_name_entry, loan_date_entry, retur
     return_date_entry.set_date(datetime.datetime.strptime(values[4], "%Y-%m-%d"))
 
     status_combobox.set(values[5])
+
     
 def build_right_frame(parent_frame, destroy=False):
     global right_frame, student_treeview, book_treeview, flag
