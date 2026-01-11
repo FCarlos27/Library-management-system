@@ -449,11 +449,11 @@ def select_loan(event, student_id_entry, book_name_entry, loan_date_entry, retur
         loan_id_entry.insert(0, loan_id)
         loan_id_entry.config(state='disabled')
         return
-<<<<<<< HEAD
-    
-=======
 
->>>>>>> 87b1e7d (feat: refactor penalties form to use less functions, delete book_name from penalties table)
+    
+
+
+
     clear_fields(student_id_entry, book_name_entry, loan_date_entry, return_date_entry, True)
     values = loan_treeview.item(selected_item, 'values')
 
