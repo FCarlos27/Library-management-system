@@ -3,7 +3,8 @@ from books import book_form
 from students import student_form
 from loans import loans_form
 from penalties import penalties_form
-from database import initialize_database
+from database import initialize_database, connect_database
+from datetime import datetime
 
 initialize_database()
         
@@ -23,7 +24,7 @@ titleLabel.pack(side=LEFT)
 logoutButton = Button(title_frame, text="Logout", font=("times new roman", 15, 'bold'), fg="white", bg="#00566b", cursor="hand2")
 logoutButton.pack(side=RIGHT, padx=(0,10))
 
-subtitleLabel = Label(root, text="Welcome to Library Management System\t Date: 2025-01-01\t\t\tTime: 12:00 PM", font=("times new roman", 15), bg="#8A97D9", fg="white")
+subtitleLabel = Label(root, text="", font=("times new roman", 15), bg="#8A97D9", fg="white")
 subtitleLabel.pack(fill=X)
 
 # Star of left menu
@@ -105,5 +106,46 @@ def destroy_all(root):
                          flash_card_frame):
             widget.destroy()
 
-root.mainloop() 
+def update_time():
+    # Get current date and time
+    now = datetime.now()
+    date_str = now.strftime("%Y-%m-%d")
+    time_str = now.strftime("%I:%M:%S %p")  # 12-hour format with AM/PM
 
+    # Update label text
+    subtitleLabel.config(
+        text=f"Welcome to Library Management System\t Date: {date_str}\t\t\tTime: {time_str}"
+    )
+
+    # Schedule next update after 1000 ms (1 second)
+    subtitleLabel.after(1000, update_time)
+
+def flashcard_counts():
+    # Here you would typically fetch these counts from the database
+
+    try:
+        conn, cursor = connect_database()
+        cursor.execute("SELECT COUNT(*) AS total FROM BOOKS")
+        total_books = cursor.fetchone()['total']
+
+        cursor.execute("SELECT COUNT(*) AS total FROM STUDENTS")
+        total_students = cursor.fetchone()['total']
+
+        cursor.execute("SELECT COUNT(*) AS total FROM LOANS WHERE status='active'")
+        active_loans = cursor.fetchone()['total']
+    except Exception as e:
+        return e
+    finally: 
+        if conn:
+            conn.close()
+
+    total_books_count.config(text=str(total_books))
+    total_students_count.config(text=str(total_students))
+    total_loan_count.config(text=str(active_loans))
+
+# Start updating
+update_time()
+
+flashcard_counts()
+
+root.mainloop() 
