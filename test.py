@@ -27,7 +27,7 @@ logoutButton.pack(side=RIGHT, padx=(0,10))
 subtitleLabel = Label(root, text="", font=("times new roman", 15), bg="#8A97D9", fg="white")
 subtitleLabel.pack(fill=X)
 
-# Star of left menu
+# === Left Menu Section ===
 leftFrame = Frame(root, width=100, bg="#f0f9ff")
 leftFrame.pack(fill=Y, side=LEFT)
 
@@ -57,9 +57,8 @@ PenaltyButton.pack(fill=X)
 exit_icon = PhotoImage(file="images\\exit.png")
 ExitButton = Button(leftFrame, image=exit_icon, compound=LEFT, text="  Exit", font=("times new roman", 20, 'bold'), bg="white", fg="black", cursor="hand2", command=root.quit, anchor='w', padx=12)
 ExitButton.pack(fill=X)
-# End of left menu
 
-# Start of flashcards frame
+# === Flashcards Section ===
 flash_card_frame = Frame(root, bg="#f0f9ff")
 flash_card_frame.pack(fill=BOTH)
 
@@ -98,30 +97,21 @@ total_loan_label = Label(loan_frame, text="Active Loans", font=("times new roman
 total_loan_label.pack()
 total_loan_count = Label(loan_frame, text="53", font=("times new roman", 20, 'bold'), bg="#7A4A91", fg="white")
 total_loan_count.pack()
-# End of flashcards frame
 
-def destroy_all(root) -> None:
+
+def destroy_all(root):
     """
-    Destroy all child widgets of the given root except key frames and labels.
-
-    This function iterates through all widgets inside the root window and
-    removes them, preserving only the specified frames and labels that
-    should remain visible (leftFrame, title_frame, subtitleLabel, flash_card_frame).
+    Destroys all widgets in the root window except for the left menu and title/subtitle frames.
     """
     for widget in root.winfo_children():
         if widget not in (leftFrame, title_frame, subtitleLabel,
                          flash_card_frame):
             widget.destroy()
 
-def update_time() -> None:
+def update_time():
     """
-    Update the subtitle label with the current date and time.
-
-    This function retrieves the current system date and time, formats them,
-    and updates the subtitle label text. It reschedules itself to run every
-    second to keep the display current.
+    Updates the subtitle label with the current date and time every second.
     """
-    
     # Get current date and time
     now = datetime.now()
     date_str = now.strftime("%Y-%m-%d")
@@ -137,15 +127,8 @@ def update_time() -> None:
 
 def flashcard_counts():
     """
-    Fetch and display counts for books, students, and active loans.
-
-    This function queries the database for totals of books, students,
-    and active loans, then updates the corresponding flashcard labels
-    in the GUI. Returns an exception if a database error occurs.
+    Fetches counts from the database and updates the flashcard labels.
     """
-
-    # Here you would typically fetch these counts from the database
-
     try:
         conn, cursor = connect_database()
         cursor.execute("SELECT COUNT(*) AS total FROM BOOKS")
@@ -162,13 +145,12 @@ def flashcard_counts():
         if conn:
             conn.close()
 
+    # Update flashcard labels
     total_books_count.config(text=str(total_books))
     total_students_count.config(text=str(total_students))
     total_loan_count.config(text=str(active_loans))
 
-# Start updating
+
 update_time()
-
 flashcard_counts()
-
 root.mainloop() 

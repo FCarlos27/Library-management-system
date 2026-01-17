@@ -1,17 +1,25 @@
+import tkcalendar
 from database import connect_database
 from tkinter import messagebox, ttk
 from tkinter import *
+from tkcalendar import DateEntry
 from datetime import datetime 
 
-def treeview_data():
-    global book_treeview
+def treeview_data(treeview: ttk.Treeview) -> None:
+    """
+    Populate the given Treeview widget with books records from the database.
+    
+    Parameters
+    ----------
+    treeview : Treeview widget to populate with books data.
+    """
     try:
         conn, cursor = connect_database()
         cursor.execute("SELECT * FROM books")
         results = cursor.fetchall()
-        book_treeview.delete(*book_treeview.get_children())
+        treeview.delete(*treeview.get_children())
         for row in results:
-            book_treeview.insert("", END, values=(
+            treeview.insert("", END, values=(
                 row["id"],
                 row["title"],
                 row["author"],
@@ -25,13 +33,29 @@ def treeview_data():
     finally:
         conn.close()
 
-def create_book_treeview(parent_frame):
-    global book_treeview
+def create_book_treeview(parent_frame: Frame) -> ttk.Treeview:
+    """
+     Create and configure a Treeview widget for displaying books records.
+
+    Parameters
+    ----------
+    parent_frame : The frame in which to place the Treeview.
+
+    Returns
+    -------
+    ttk.Treeview
+        The configured Treeview widget.
+    """
+    # Configure the Treeview widget and scrollbar
 
     vertical_scrollbar = Scrollbar(parent_frame, orient=VERTICAL)
     book_treeview = ttk.Treeview(parent_frame, columns=("id", "title", "author", "quantity", "year", "edition", "language"), show="headings", yscrollcommand=vertical_scrollbar.set)
+    
     vertical_scrollbar.pack(side=RIGHT, fill=Y, pady=(10,0))
     vertical_scrollbar.config(command=book_treeview.yview)
+
+    # Define column headers
+
     book_treeview.heading("id", text="Id", anchor="w")
     book_treeview.heading("title", text="Title", anchor="w")
     book_treeview.heading("author", text="Author", anchor="w")
@@ -39,6 +63,8 @@ def create_book_treeview(parent_frame):
     book_treeview.heading("year", text="Year", anchor="w")
     book_treeview.heading("edition", text="Edition", anchor="w")
     book_treeview.heading("language", text="Language", anchor="w")
+
+    # Set column widths
 
     book_treeview.column("id", width=20, anchor="w")
     book_treeview.column("title", width=200, anchor="w")
@@ -48,10 +74,26 @@ def create_book_treeview(parent_frame):
     book_treeview.column("edition", width=60, anchor="w")
     book_treeview.column("language", width=100, anchor="w")
 
-    treeview_data()
+    treeview_data(book_treeview)
     return book_treeview
 
-def book_form(root):
+def book_form(root: Tk) -> None:
+    """
+    Build and display the Book Management interface inside the given root window.
+
+    This function creates a dedicated frame for managing books records. It includes:
+      - A header with a title and back button.
+      - A top frame containing search controls (search by Title or Author, search entry, 
+        search button, and show-all button).
+      - A Treeview widget to display book data.
+      - A bottom frame with entry fields for book details 
+      - Action buttons to add, update, delete, and clear book records.
+
+    Parameters
+    ----------
+    root : Tk
+        The main application window where the book management frame will be placed.
+    """
     global backbutton_image, book_treeview
 
     books_frame = Frame(root,bg="white", bd=2, relief=RIDGE)
@@ -67,7 +109,8 @@ def book_form(root):
     back_button = Button(header_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: books_frame.destroy())
     back_button.grid(row=0, column=0, padx=5)
 
-    # Start of top frame
+    # === Top Frame ===
+
     top_frame = Frame(books_frame, bg="#f0f9ff")
     top_frame.pack(fill=X)
 
@@ -81,20 +124,18 @@ def book_form(root):
     make_optional(search_entry)
 
     search_button = Button(searchFrame, text="SEARCH", font=('times new roman', 12), bg="#2b7192", fg="white", width=10,
-                           cursor="hand2", command=lambda: search_book_title_author(search_combobox.get(), search_entry.get()))
+                           cursor="hand2", command=lambda: search_book_title_author(search_combobox.get(), search_entry.get(), book_treeview))
     search_button.grid(row=0, column=2, padx=20)
 
     showall_button = Button(searchFrame, text="Show All", font=('times new roman', 12), bg="#2b7192", fg="white", width=10, 
-                            cursor="hand2", command=lambda: treeview_data())
+                            cursor="hand2", command=lambda: treeview_data(book_treeview))
     showall_button.grid(row=0, column=3)
 
     book_treeview = create_book_treeview(top_frame)
     book_treeview.pack(pady=(10, 0), fill=BOTH)
-    
-    treeview_data()
-    # End of top frame
 
-    # Start of bottom frame
+    # === Bot Frame ===
+
     bottom_frame = Frame(books_frame, bg ="white")
     bottom_frame.pack(anchor=CENTER)
 
@@ -131,37 +172,42 @@ def book_form(root):
     b_language_entry = Entry(bottom_frame, font=("times new roman", 12), bg="white")
     b_language_entry.grid(row=2, column=3, padx=20, pady=10)
 
-    book_treeview.bind("<ButtonRelease-1>", lambda event: select_data(event, b_title_entry, b_author_entry,
+    book_treeview.bind("<ButtonRelease-1>", lambda event: select_book(event, b_title_entry, b_author_entry,
                                                         b_quantity_entry, b_year_combobox,
-                                                        b_language_entry, b_edition_entry)) 
+                                                        b_language_entry, b_edition_entry, book_treeview)) 
 
     add_btn = Button(bottom_frame, text="Add", font=("times new roman", 12, "bold"), width= 15, fg="white", 
         bg="#00566b", cursor="hand2", command=lambda: add_book(b_title_entry, b_author_entry,
                                                                  b_quantity_entry, b_year_combobox, 
-                                                                 b_language_entry, b_edition_entry))
+                                                                 b_language_entry, b_edition_entry, book_treeview))
     add_btn.grid(row=4, column=0, padx=0, pady=20)
 
     update_btn = Button(bottom_frame, text="Update", font=("times new roman", 12, "bold"), width= 15, fg="white",
-        bg="#00566b",cursor="hand2", command=lambda: update_data(b_title_entry, b_author_entry,
+        bg="#00566b",cursor="hand2", command=lambda: update_book(b_title_entry, b_author_entry,
                                                                  b_quantity_entry, b_year_combobox, 
-                                                                 b_language_entry, b_edition_entry))
+                                                                 b_language_entry, b_edition_entry, book_treeview))
     update_btn.grid(row=4, column=1, padx=10, pady=20)
 
     delete_btn = Button(bottom_frame,text="Delete",font=("times new roman", 12, "bold"), width= 15, fg="white",
-        bg="#00566b", cursor="hand2", command=lambda: delete_data(b_title_entry, b_author_entry,
+        bg="#00566b", cursor="hand2", command=lambda: delete_book(b_title_entry, b_author_entry,
                                                                      b_quantity_entry, b_year_combobox,
-                                                                     b_language_entry, b_edition_entry))
+                                                                     b_language_entry, b_edition_entry, book_treeview))
     delete_btn.grid(row=4, column=2, padx=10, pady=20)
 
     clear_btn = Button(bottom_frame, text="Clear", font=("times new roman", 12, "bold"), width= 15, fg="white",
         bg="#00566b", cursor="hand2", command=lambda: clear_fields(b_title_entry, b_author_entry,
                                                                      b_quantity_entry, b_year_combobox,
-                                                                     b_language_entry, b_edition_entry, True))
+                                                                     b_language_entry, b_edition_entry, treeview1=book_treeview))
     clear_btn.grid(row=4, column=3, padx=10, pady=20)
     # End of bottom frame
     
 
-def add_book(title_entry, author_entry, quantity_entry, year_entry, language_entry, edition_entry=""):
+def add_book(title_entry: Entry, author_entry: Entry, quantity_entry: Entry, 
+            year_entry: Entry, language_entry: Entry, edition_entry: Entry="", treeview: ttk.Treeview = None) -> None:
+    """
+    Validate input fields and insert a new book record into the database.
+    
+    """
     title = title_entry.get()
     author = author_entry.get()
     quantity = quantity_entry.get()
@@ -189,8 +235,8 @@ def add_book(title_entry, author_entry, quantity_entry, year_entry, language_ent
             (title.strip(), author.strip(), quantity, year, edition.strip(), language.strip())
         )
         conn.commit()
-        treeview_data()
-        clear_fields(title_entry, author_entry, quantity_entry, year_entry, language_entry, edition_entry, True)
+        treeview_data(treeview)
+        clear_fields(title_entry, author_entry, quantity_entry, year_entry, language_entry, edition_entry, treeview1=treeview)
         messagebox.showinfo("Success", "Book inserted successfully")
         return True
 
@@ -200,32 +246,34 @@ def add_book(title_entry, author_entry, quantity_entry, year_entry, language_ent
 
     finally:
         conn.close()
-
-def clear_fields(title_entry, author_entry, quantity_entry, year_entry, 
-                 language_entry, edition_entry, check):
-    title_entry.delete(0, END)
-    author_entry.delete(0, END)
-    quantity_entry.delete(0, END)
-    year_entry.set("")    
-    language_entry.delete(0, END)
-    edition_entry.delete(0, END)
-    if check:
-        book_treeview.selection_remove(book_treeview.selection())
     
 
-def select_data(event, title_entry, author_entry=None, quantity_entry=None, year_combobox=None, 
-                language_entry=None, edition_entry=None):
-    index = book_treeview.selection()
+def select_book(event: callable, title_entry: Entry, author_entry: Entry = None, 
+                quantity_entry: Entry = None, year_combobox: Entry = None, 
+                language_entry: Entry = None, edition_entry: Entry = None, 
+                treeview: ttk.Treeview = None) -> None:
+    """
+    Populate entry fields with data from the selected book in the Treeview.
+
+    When a row is selected, this function retrieves its values and fills the
+    corresponding entry widgets. If only `title_entry` is provided, then only the
+    title field is updated. Otherwise, all provided fields are cleared and
+    repopulated with the row data.
+    """
+
+    index = treeview.selection()
     if not index:
         return
-    content = book_treeview.item(index)
+    content = treeview.item(index)
     row = content["values"]
+
     if author_entry is None:
         title_entry.delete(0, END)
         title_entry.insert(0, row[1])
         return
+    
     clear_fields(title_entry, author_entry, quantity_entry, year_combobox, 
-                 edition_entry, language_entry, False)
+                 edition_entry, language_entry)
     title_entry.insert(0, row[1])
     author_entry.insert(0, row[2])
     quantity_entry.insert(0, row[3])
@@ -233,23 +281,39 @@ def select_data(event, title_entry, author_entry=None, quantity_entry=None, year
     language_entry.insert(0, row[6])
     edition_entry.insert(0, row[5])    
 
-def update_data(title_entry, author_entry, quantity_entry, year_combobox, 
-                language_entry, edition_entry):
-    index = book_treeview.selection()
-    content = book_treeview.item(index)
+def update_book(title_entry: Entry, author_entry: Entry, quantity_entry: Entry, year_combobox: ttk.Combobox, 
+                language_entry: Entry, edition_entry: Entry, treeview: ttk.Treeview) -> None:
+    """
+    Update an existing loan record in the database with new values from entry fields.
+
+    This function retrieves the selected book ID from the Treeview,
+    and performs an SQL UPDATE operation. If successful, the loan record is updated
+    in the database and the Treeview is refreshed.
+    """
+    index = treeview.selection()
+    content = treeview.item(index)
     row = content["values"]
     id = row[0]
     
+    quantity = quantity_entry.get()
+    if int(quantity) <= 0 or quantity is None:
+        messagebox.showwarning("Error", "Quantity has to be a 1 or more")
+        try:
+            quantity = int(quantity)
+        except ValueError:
+            messagebox.showerror("Invalid input", "Quantity must be numeric.")
+            return
+        
     try: 
         conn, cursor = connect_database()
         cursor.execute("UPDATE BOOKS SET title = %s, author = %s, quantity = %s, " \
-        "year = %s, language = %s, edition = %s WHERE id = %s", (title_entry.get(), author_entry.get(), quantity_entry.get(),
+        "year = %s, language = %s, edition = %s WHERE id = %s", (title_entry.get(), author_entry.get(), quantity,
                                                                  year_combobox.get(), language_entry.get(), edition_entry.get(), id))
         conn.commit()
         messagebox.showinfo("Book Updated", "Book has been updated sucesfully.")
         clear_fields(title_entry, author_entry, quantity_entry, year_combobox, 
-                 edition_entry, language_entry, True)
-        treeview_data()
+                 edition_entry, language_entry, treeview1=treeview)
+        treeview_data(treeview)
         return
     except Exception as e:
         messagebox.showerror("Error", f"Invalid operation due to {e}")
@@ -257,12 +321,22 @@ def update_data(title_entry, author_entry, quantity_entry, year_combobox,
     finally:
         conn.close()
 
-def delete_data(title_entry, author_entry, quantity_entry, year_combobox, 
-                language_entry, edition_entry):
+def delete_book(title_entry: Entry, author_entry: Entry, quantity_entry: Entry, year_combobox: ttk.Combobox, 
+                language_entry: Entry, edition_entry: Entry, treeview: ttk.Treeview) -> None:
+    """
+    Delete a book record from the database based on the selected ID.
+
+    This function validates that a book is selected, checks if the book
+    exists, and prompts the user for confirmation. If confirmed, the book
+    record is removed from the BOOKS table, the Treeview is refreshed, and
+    the input fields are cleared.
+    """
+
     index = book_treeview.selection()
     content = book_treeview.item(index)
     row = content["values"]
     id = row[0]
+
     result = messagebox.askyesno("Delete Confirmation", "Are you sure you want to delete this book?", icon='warning')
     if result:
         try: 
@@ -271,8 +345,8 @@ def delete_data(title_entry, author_entry, quantity_entry, year_combobox,
             conn.commit()
             messagebox.showinfo("Book Deleted", "Book has been deleted sucesfully.")
             clear_fields(title_entry, author_entry, quantity_entry, year_combobox, 
-                    language_entry, edition_entry, True)
-            treeview_data()
+                    language_entry, edition_entry, treeview1=treeview)
+            treeview_data(treeview)
             return
         except Exception as e:
             messagebox.showerror("Error", f"Invalid operation due to: {e}")
@@ -280,10 +354,19 @@ def delete_data(title_entry, author_entry, quantity_entry, year_combobox,
         finally:
             conn.close()
 
-def search_book(title, author="", language="", edition=""):
-    conn, cursor = connect_database() 
+def search_book(title: str, author: str="", language: str="", edition: str="") -> dict|None:
+    """
+    Search for a book record in the database by title, author, language, and edition.
+
+    This function queries the BOOKS table for the matching title, author, language and edition.
+    If only title is given, only queries using title.
+    If found, it returns the book record as a tuple; otherwise, it
+    returns None. Displays error messages if the search term is missing
+    or if a database error occurs.
+    """
     if author == "":
         try:
+            conn, cursor = connect_database() 
             cursor.execute("SELECT * FROM BOOKS WHERE title = %s", (title,))
             result = cursor.fetchone()
             return dict(result) if result else None
@@ -293,6 +376,7 @@ def search_book(title, author="", language="", edition=""):
             if conn:
                 conn.close()
     try:
+        conn, cursor = connect_database() 
         cursor.execute("SELECT * FROM BOOKS WHERE title = %s and author = %s and language = %s and edition = %s", 
                        (title, author, language, edition))
         result = cursor.fetchone()
@@ -303,8 +387,16 @@ def search_book(title, author="", language="", edition=""):
         if conn:
             conn.close()
 
-def search_book_title_author(search_combobox, search_entry):
-    global book_treeview
+def search_book_title_author(search_combobox: ttk.Combobox, search_entry: Entry, treeview: ttk.Treeview) -> None:
+    """
+    Search for books by title or author and update the given Treeview with results.
+
+    This function validates the search input, queries the database based on the
+    selected search criterion (Title or Author), and refreshes the Treeview with
+    the matching records. It handles invalid input gracefully by showing error
+    or warning messages.
+    """
+
     if not search_entry:
         messagebox.showerror("Validation Error", "Search field must be filled out.")
         return
@@ -316,9 +408,9 @@ def search_book_title_author(search_combobox, search_entry):
         try:
             cursor.execute("SELECT * FROM BOOKS WHERE title = %s", (search_entry,))
             results = cursor.fetchall()
-            book_treeview.delete(*book_treeview.get_children())
+            treeview.delete(*treeview.get_children())
             for row in results:
-                book_treeview.insert("", END, values=(
+                treeview.insert("", END, values=(
                     row["id"],
                     row["title"],
                     row["author"],
@@ -336,9 +428,9 @@ def search_book_title_author(search_combobox, search_entry):
         try:
             cursor.execute("SELECT * FROM BOOKS WHERE author = %s", (search_entry,))
             results = cursor.fetchall()
-            book_treeview.delete(*book_treeview.get_children())
+            treeview.delete(*treeview.get_children())
             for row in results:
-                book_treeview.insert("", END, values=(
+                treeview.insert("", END, values=(
                     row["id"],
                     row["title"],
                     row["author"],
@@ -353,22 +445,16 @@ def search_book_title_author(search_combobox, search_entry):
         finally:
             conn.close()
 
-def search_book_id(id):
+def increase_book_quantity(title: str, edition: str, quantity: int=1) -> int:
+    """
+    Increase the quantity of a specific book in the database.
+
+    This function retrieves the current quantity of a book (identified by its
+    title and edition), adds the specified amount, and updates the record in
+    the BOOKS table. It returns the new quantity after the update.
+    """
     try:
         conn, cursor = connect_database()
-        cursor.execute("SELECT * FROM BOOKS WHERE id = %s", (id,))
-        result = cursor.fetchone()
-        return dict(result) if result else None
-    except Exception as e:
-        return e
-    finally:
-        if conn:
-            conn.close()
-
-def increase_book_quantity(title, edition, quantity=1):
-    conn, cursor = connect_database()
-
-    try:
         cursor.execute("SELECT quantity FROM BOOKS WHERE title = %s and edition = %s", (title, edition,))
         result = cursor.fetchone()
 
@@ -383,7 +469,15 @@ def increase_book_quantity(title, edition, quantity=1):
         if conn:
             conn.close()
             
-def decrease_book_quantity(title):
+def decrease_book_quantity(title: str) -> int:
+    """
+    Decrease the quantity of a specific book in the database.
+
+    This function retrieves the current quantity of a book (identified by its
+    title and edition), substract the specified amount, and updates the record in
+    the BOOKS table. It returns the new quantity after the update.
+
+    """
     if search_book(title) is None:
         return "Book not found."
     
@@ -404,13 +498,67 @@ def decrease_book_quantity(title):
     finally:
         conn.close()
 
+def clear_fields(*entries, treeview1: ttk.Treeview = None, treeview2: ttk.Treeview = None) -> None:
+    """
+    Clear the given entry or text widgets and optionally clear Treeview selection.
+
+    This function restores entry widgets to a normal state, deletes their content,
+    and handles both `Entry` and `Text` widgets safely. If Treeviews are provided, 
+    the current selection in the Treeviews are also removed.
+
+    Behavior
+    --------
+    - Ignores None values in the entries list.
+    - Restores each widget's state to "normal" before clearing.
+    - Deletes content using the appropriate method for `Entry` or `Text`.
+    - Silently skips widgets that raise `TclError`.
+    - Optionally clears Treeview selection when a treeview is passed.
+    """
+
+    for entry in entries:
+        if entry is None:
+            continue
+        try:
+            entry.config(state="normal")
+            if isinstance(entry, Text):
+                entry.delete("1.0", "end")
+            elif isinstance(entry, DateEntry):
+                entry.set_date(datetime.now().date())
+            else:
+                entry.delete(0, "end")
+        except TclError:
+            continue
+
+    if treeview1:
+        treeview1.selection_remove(treeview1.selection())
+
+    if treeview2:
+        treeview2.selection_remove(treeview2.selection())
+
+def make_optional(entry_widget):
+    """
+    Handle focus-in event for optional entry widgets.
+
+    This function is triggered when an entry widget gains focus. It updates
+    the widget's background color to white, visually indicating that the
+    field is active and ready for input.
+
+    Parameters
+    ----------
+    event : Event
+    The Tkinter event object containing the widget that received focus.
+
+    Notes
+    -----
+    - Intended for entry fields that are optional.
+    - Bound to the "<FocusIn>" event by `make_optional`.
+    """
+    entry_widget.bind("<FocusIn>", mark_optional_on_focus_in)
+    entry_widget.bind("<FocusOut>", restore_optional_on_focus_out)
+
 def mark_optional_on_focus_in(event):
     event.widget.config(bg="white")
 
 def restore_optional_on_focus_out(event):
     if not event.widget.get():
         event.widget.config(bg="light gray")
-
-def make_optional(entry_widget):
-    entry_widget.bind("<FocusIn>", mark_optional_on_focus_in)
-    entry_widget.bind("<FocusOut>", restore_optional_on_focus_out)

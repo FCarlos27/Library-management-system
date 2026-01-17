@@ -2,7 +2,7 @@ from database import connect_database
 from tkinter import messagebox, ttk
 from tkcalendar import DateEntry
 from tkinter import *
-from books import make_optional
+from books import make_optional, clear_fields
 from datetime import datetime 
 import re
 
@@ -48,7 +48,7 @@ def create_student_treeview(parent_frame: Frame) -> ttk.Treeview:
     ttk.Treeview
         The configured Treeview widget.
     """
-    # Configure headings and column widths for readability.
+    # Configure the Treeview widget and scrollbar
 
     vertical_scrollbar = Scrollbar(parent_frame, orient=VERTICAL)
     student_treeview = ttk.Treeview(parent_frame, columns=("id", "name", "birthdate", "phone", "email", "address", "total_penalty"), show="headings")
@@ -88,22 +88,13 @@ def student_form(root: Tk) -> None:
       - A top frame containing search controls (search by ID or Name, search entry, 
         search button, and show-all button).
       - A Treeview widget to display student data.
-      - A bottom frame with entry fields for student details (ID, Name, Birthdate, 
-        Phone, Email, Address).
+      - A bottom frame with entry fields for student details
       - Action buttons to add, update, delete, and clear student records.
 
     Parameters
     ----------
     root : Tk
         The main application window where the student management frame will be placed.
-
-    Notes
-    -----
-    - The function uses global `backbutton_image` for the back button icon.
-    - The Treeview is bound to `select_student` for row selection.
-    - Buttons trigger helper functions (`add_student`, `update_student`, 
-      `delete_student`, `clear_fields`) to manage student data.
-    - The function does not return a value; it directly modifies the GUI.
     """
     global backbutton_image
 
@@ -200,7 +191,7 @@ def student_form(root: Tk) -> None:
 
     clear_btn = Button(bottom_frame, text="Clear", font=("times new roman", 12, "bold"), width= 15, fg="white",
         bg="#00566b", cursor="hand2", command=lambda: clear_fields(s_id_entry, s_name_entry, s_birthdate_entry,
-                                                                   s_phone_entry, s_email_entry, s_address_entry, treeview=student_treeview, check=True))
+                                                                   s_phone_entry, s_email_entry, s_address_entry, treeview1=student_treeview))
     clear_btn.grid(row=4, column=3, padx=(20,0), pady=20)
 
 
@@ -209,15 +200,7 @@ def add_student(id_entry: Entry, name_entry: Entry, birthdate_entry: Entry,
                 phone_entry: Entry, email_entry: Entry, address_entry: Entry, treeview: ttk.Treeview) -> None:
     """
     Validate input fields and insert a new student record into the database.
-
-    Parameters
-    ----------
-    id_entry : Entry widget containing the student ID.
-    name_entry : Entry widget containing the student's name.
-    birthdate_entry : Entry widget containing the student's birthdate in YYYY-MM-DD format.
-    phone_entry : Entry widget containing the student's phone number.
-    email_entry : Entry widget containing the student's email address.
-    address_entry : Entry widget containing the student's address."""
+    """
 
     student_id = id_entry.get().strip()
     name = name_entry.get().strip()
@@ -267,7 +250,7 @@ def add_student(id_entry: Entry, name_entry: Entry, birthdate_entry: Entry,
         )
         conn.commit()
         treeview_data(treeview)
-        clear_fields(id_entry, name_entry, birthdate_entry, phone_entry, email_entry, address_entry, treeview=treeview, check=True)
+        clear_fields(id_entry, name_entry, birthdate_entry, phone_entry, email_entry, address_entry, treeview1=treeview)
         messagebox.showinfo("Success", "Student added successfully.")
     except Exception as e:
         messagebox.showerror("Database Error", f"An error occurred: {e}")
@@ -280,19 +263,10 @@ def update_student(id_entry: Entry, name_entry: Entry, birthdate_entry: Entry,
     """
     Update an existing student record in the database with new values from entry fields.
 
-    This function retrieves the selected student ID from the Treeview, validates the
+    This function retrieves used the given student ID from the paramaters, validates the
     updated input fields (email format, phone digits, birthdate validity, minimum age),
     and performs an SQL UPDATE operation. If successful, the student record is updated
     in the database and the Treeview is refreshed.
-
-    Behavior
-    --------
-    - Shows error messages via `messagebox.showerror` if validation fails.
-    - Ensures birthdate is not in the future and student is at least 10 years old.
-    - Updates the STUDENTS table with new values for name, birthdate, phone, email, and address.
-    - Displays a success message when the update completes.
-    - Clears and resets entry fields using `clear_fields(...)`.
-    - Refreshes the Treeview data via `treeview_data(...)`.
     """
 
     # Basic validation
@@ -326,7 +300,7 @@ def update_student(id_entry: Entry, name_entry: Entry, birthdate_entry: Entry,
             name_entry.get(), birthdate_entry.get(), phone_entry.get(), email_entry.get(), address_entry.get(), id_entry.get()))
         conn.commit()
         messagebox.showinfo("Success", "Student updated successfully.")
-        clear_fields(id_entry, name_entry, birthdate_entry, phone_entry, email_entry, address_entry, treeview=treeview, check=True)
+        clear_fields(id_entry, name_entry, birthdate_entry, phone_entry, email_entry, address_entry, treeview1=treeview)
         treeview_data(treeview)
         return
     except Exception as e:
@@ -343,15 +317,6 @@ def delete_student(id_entry: Entry, name_entry: Entry, birthdate_entry: Entry,
     exists, and prompts the user for confirmation. If confirmed, the student
     record is removed from the STUDENTS table, the Treeview is refreshed, and
     the input fields are cleared.
-
-    Behavior
-    --------
-    - Shows a warning if no student ID is selected.
-    - Shows an error if the student ID does not exist in the database.
-    - Prompts the user with a confirmation dialog before deletion.
-    - Executes a SQL DELETE statement to remove the student record.
-    - Displays a success message when deletion completes.
-    - Clears entry fields and refreshes the Treeview data.
     """
     # Basic validation
     if not id_entry.get().strip():
@@ -369,7 +334,7 @@ def delete_student(id_entry: Entry, name_entry: Entry, birthdate_entry: Entry,
             cursor.execute("DELETE FROM STUDENTS WHERE id=%s", (id_entry.get().strip(),))
             conn.commit()
             messagebox.showinfo("Success", "Student deleted successfully.")
-            clear_fields(id_entry, name_entry, birthdate_entry, phone_entry, email_entry, address_entry, treeview=treeview, check=True)
+            clear_fields(id_entry, name_entry, birthdate_entry, phone_entry, email_entry, address_entry, treeview1=treeview)
             treeview_data(treeview)
             return
         except Exception as e:
@@ -385,15 +350,8 @@ def search_student(id: int) -> dict | None:
     If found, it returns the student record as a tuple; otherwise, it
     returns None. Displays error messages if the search term is missing
     or if a database error occurs.
-
-    Behavior
-    --------
-    - Shows an error if no ID is provided.
-    - Executes a SQL SELECT statement to find the student.
-    - Returns the first matching record as a tuple, or None if not found.
-    - Displays an error message if a database exception occurs.
-    - Ensures the database connection is closed in a `finally` block.
     """
+    
     if not id:
         messagebox.showerror("Error", "Please enter a search term.")
         return
@@ -480,7 +438,6 @@ def select_student(event, treeview: ttk.Treeview = None, id_entry: Entry = None,
 
     Notes
     -----
-    - Calls `clear_fields(...)` before repopulating entries.
     - Student ID is disabled after being inserted.
     - Phone number is zero-padded to ensure 11 digits.
     """
@@ -501,7 +458,7 @@ def select_student(event, treeview: ttk.Treeview = None, id_entry: Entry = None,
     # Clear entry fields and populates with new entries
 
     clear_fields(id_entry, name_entry, birthdate_entry,
-                 phone_entry, email_entry, address_entry, treeview=treeview, check=False)
+                 phone_entry, email_entry, address_entry)
     id_entry.insert(0, row[0])
     id_entry.config(state='disabled')
     name_entry.insert(0, row[1])
@@ -510,34 +467,3 @@ def select_student(event, treeview: ttk.Treeview = None, id_entry: Entry = None,
     phone_entry.insert(0, phone_str)
     email_entry.insert(0, row[4])
     address_entry.insert(0, row[5])
-
-def clear_fields(*entries, treeview: ttk.Treeview = None, check: bool):
-    """
-    Reset the given entry or text widgets and optionally clear Treeview selection.
-
-    This function restores entry widgets to a normal state, deletes their content,
-    and handles both `Entry` and `Text` widgets safely. If `check` is True and a
-    Treeview is provided, the current selection in the Treeview is also removed.
-
-    Behavior
-    --------
-    - Ignores None values in the entries list.
-    - Restores each widget's state to "normal" before clearing.
-    - Deletes content using the appropriate method for `Entry` or `Text`.
-    - Silently skips widgets that raise `TclError`.
-    - Optionally clears Treeview selection when `check` is True.
-    """
-    for entry in entries:
-        if entry is None:
-            continue
-        try:
-            entry.config(state="normal")
-            if isinstance(entry, Text):
-                entry.delete("1.0", "end")
-            else:
-                entry.delete(0, "end")
-        except TclError:
-            continue
-
-    if check and treeview:
-        treeview.selection_remove(treeview.selection())
