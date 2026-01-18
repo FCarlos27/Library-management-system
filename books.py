@@ -1,4 +1,3 @@
-import tkcalendar
 from database import connect_database
 from tkinter import messagebox, ttk
 from tkinter import *
@@ -77,7 +76,7 @@ def create_book_treeview(parent_frame: Frame) -> ttk.Treeview:
     treeview_data(book_treeview)
     return book_treeview
 
-def book_form(root: Tk) -> None:
+def book_form(root: Tk, on_back: callable) -> None:
     """
     Build and display the Book Management interface inside the given root window.
 
@@ -91,8 +90,8 @@ def book_form(root: Tk) -> None:
 
     Parameters
     ----------
-    root : Tk
-        The main application window where the book management frame will be placed.
+    root : The main application window where the book management frame will be placed.
+    on_back: Function that updates the flashcards in root
     """
     global backbutton_image, book_treeview
 
@@ -106,7 +105,7 @@ def book_form(root: Tk) -> None:
     header.grid(row=0, column=1, sticky="W", padx=350)
     
     backbutton_image = PhotoImage(file="images\\return.png")
-    back_button = Button(header_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: books_frame.destroy())
+    back_button = Button(header_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: [on_back(), books_frame.destroy()])
     back_button.grid(row=0, column=0, padx=5)
 
     # === Top Frame ===

@@ -79,7 +79,7 @@ def create_student_treeview(parent_frame: Frame) -> ttk.Treeview:
     treeview_data(student_treeview)
     return student_treeview
 
-def student_form(root: Tk) -> None:
+def student_form(root: Tk, on_back: callable) -> None:
     """
     Build and display the Student Management interface inside the given root window.
 
@@ -93,8 +93,8 @@ def student_form(root: Tk) -> None:
 
     Parameters
     ----------
-    root : Tk
-        The main application window where the student management frame will be placed.
+    root : The main application window where the student management frame will be placed.
+    on_back: Function that updates the flashcards in root
     """
     global backbutton_image
 
@@ -107,7 +107,7 @@ def student_form(root: Tk) -> None:
     header.grid(row=0, column=1, sticky="W", padx=350)
 
     backbutton_image = PhotoImage(file="images\\return.png")
-    back_button = Button(header_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: students_frame.destroy())
+    back_button = Button(header_frame, image=backbutton_image, cursor="hand2", bg="#2b7192",bd=0 , command=lambda: [on_back(), students_frame.destroy()])
     back_button.grid(row=0, column=0, padx=5)
     
    # === Top Frame ===

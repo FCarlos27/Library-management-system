@@ -90,7 +90,7 @@ def create_loan_treeview(parent_frame: Frame) -> ttk.Treeview:
     treeview_data(loan_treeview)
     return loan_treeview
 
-def loans_form(root: Tk) -> None:
+def loans_form(root: Tk, on_back: callable) -> None:
     """
     Build and display the Loans Management interface inside the given root window.
 
@@ -104,8 +104,8 @@ def loans_form(root: Tk) -> None:
 
     Parameters
     ----------
-    root : Tk
-        The main application window where the loans management frame will be placed.
+    root : The main application window where the loans management frame will be placed.
+    on_back: Function that updates the flashcards in root
     """
 
     global backbutton_image, treeviews
@@ -125,7 +125,7 @@ def loans_form(root: Tk) -> None:
     backbutton_image = PhotoImage(file="images\\return.png")
     back_button = Button(header_frame, image=backbutton_image,
                             cursor="hand2", bg="#0B5345", bd=0,
-                            command=lambda: loans_frame.destroy())
+                            command=lambda: [on_back(), loans_frame.destroy()])
     back_button.grid(row=0, column=0, padx=5)
 
     # === Left Frame ===

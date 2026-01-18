@@ -19,6 +19,15 @@ def initialize_database():
     cursor.execute("CREATE DATABASE IF NOT EXISTS library_system")
     cursor.execute("USE library_system")
 
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS USERS (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(50) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            role ENUM('admin','librarian','student') DEFAULT 'librarian'
+        ) ENGINE=InnoDB;
+    """)
+
     # Create STUDENTS table
     cursor.execute("""
             CREATE TABLE IF NOT EXISTS STUDENTS (
@@ -47,16 +56,16 @@ def initialize_database():
 
     # Create LOANS table
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS LOANS (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    student_id INT NOT NULL,
-    book_id INT NOT NULL,
-    loan_date DATE NOT NULL,
-    return_date DATE,
-    status VARCHAR(50),
-    FOREIGN KEY (student_id) REFERENCES STUDENTS(id),
-    FOREIGN KEY (book_id) REFERENCES BOOKS(id)
-    ) ENGINE=InnoDB;
+        CREATE TABLE IF NOT EXISTS LOANS (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            student_id INT NOT NULL,
+            book_id INT NOT NULL,
+            loan_date DATE NOT NULL,
+            return_date DATE,
+            status VARCHAR(50),
+            FOREIGN KEY (student_id) REFERENCES STUDENTS(id),
+            FOREIGN KEY (book_id) REFERENCES BOOKS(id)
+        ) ENGINE=InnoDB;
     """)
 
     # Create PENALTIES table

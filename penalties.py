@@ -93,7 +93,7 @@ def create_penalty_treeview(parent_frame: Frame) -> ttk.Treeview:
     treeview_data(penalty_treeview)
     return penalty_treeview
 
-def penalties_form(root):
+def penalties_form(root: Tk, on_back: callable) -> None:
     """
     Build and display the Penalties Management interface inside the given root window.
 
@@ -105,8 +105,8 @@ def penalties_form(root):
 
     Parameters
     ----------
-    root : Tk
-        The main application window where the penalties management frame will be placed.
+    root : The main application window where the penalties management frame will be placed.
+    on_back: Function that updates the flashcards in root
     """
 
     global backbutton_image, created_entries, top_frame, active_tree, buttons, treeview, bot_frame, fields, bot_frame
@@ -158,7 +158,7 @@ def penalties_form(root):
     header.grid(row=0, column=1, sticky="W", padx=350)
 
     backbutton_image = PhotoImage(file="images\\return.png")
-    back_button = Button(header_frame, image=backbutton_image, cursor="hand2", bg="#0B5345",bd=0, command=lambda: penalties_frame.destroy())
+    back_button = Button(header_frame, image=backbutton_image, cursor="hand2", bg="#0B5345",bd=0, command=lambda: [on_back(), penalties_frame.destroy()])
     back_button.grid(row=0, column=0, padx=5)
     
     # Bot frame is created_entries first to initalize buttons and entries
